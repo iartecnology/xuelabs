@@ -129,7 +129,7 @@ export class ThemeService {
     public currentIcon$ = this.currentIconSubject.asObservable();
 
     // App Name Management
-    private defaultAppName = 'XUe LABS';
+    private defaultAppName = 'XUeLABS';
     public currentAppNameSubject = new BehaviorSubject<string>(this.defaultAppName);
     public currentAppName$ = this.currentAppNameSubject.asObservable();
 
