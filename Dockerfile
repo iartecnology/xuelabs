@@ -14,9 +14,9 @@ FROM nginx:alpine
 # Copy built assets
 COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
 
-# Custom config to LISTEN ON PORT 4000 to match user's Easypanel config
+# CONFIG NGINX TO LISTEN ON PORT 80 (Standard for Easypanel default)
 RUN echo 'server { \
-    listen 4000; \
+    listen 80; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
@@ -26,7 +26,7 @@ RUN echo 'server { \
     include /etc/nginx/mime.types; \
     }' > /etc/nginx/conf.d/default.conf
 
-# Expose 4000 explicitly
-EXPOSE 4000
+# Expose port 80
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
