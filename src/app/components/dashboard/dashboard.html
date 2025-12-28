@@ -70,8 +70,9 @@
                 <!-- If filtering, show filtered results -->
                 <ng-container *ngIf="selectedCategory">
                     <app-course-card *ngFor="let course of filteredCourses" class="fade-in" [title]="course.fullname"
-                        [image]="getCourseImage(course.id)" [id]="course.id" [enrolledUsers]="course.enrolledusercount"
-                        [category]="course.categoryname" [shortname]="course.shortname">
+                        [image]="getCourseImage(course.id)" [id]="course.id"
+                        [enrolledUsers]="course.enrolledusercount || 0" [category]="course.categoryname || ''"
+                        [shortname]="course.shortname">
                     </app-course-card>
                 </ng-container>
 
@@ -86,7 +87,7 @@
 
                     <app-course-card *ngFor="let course of courses" class="fade-in" [title]="course.title"
                         [progress]="course.progress" [image]="course.image" [color]="course.color" [id]="course.id"
-                        [enrolledUsers]="course.enrolledusercount" [category]="course.categoryname"
+                        [enrolledUsers]="course.enrolledusercount || 0" [category]="course.category || ''"
                         [shortname]="course.shortname">
                     </app-course-card>
                 </ng-container>

@@ -45,7 +45,7 @@
             <!-- Reuse existing CourseCard for Card View -->
             <app-course-card *ngIf="viewMode === 'card'" [title]="course.fullname" [progress]="course.progress"
                 [image]="course.image" [color]="course.color" [id]="course.id"
-                [enrolledUsers]="course.enrolledusercount" [category]="course.categoryname"
+                [enrolledUsers]="course.enrolledusercount || 0" [category]="course.categoryname || ''"
                 [shortname]="course.shortname">
             </app-course-card>
 
