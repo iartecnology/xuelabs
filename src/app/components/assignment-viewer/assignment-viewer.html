@@ -1,0 +1,73 @@
+<div class="assignment-container">
+    <!-- Header -->
+    <header class="glass-panel page-header">
+        <a [routerLink]="['/course', courseId]" class="back-btn">
+            <span class="icon">←</span> Volver al curso
+        </a>
+        <div class="header-content" *ngIf="assignment">
+            <div class="icon-wrapper">📝</div>
+            <h1>{{ assignment.name }}</h1>
+        </div>
+    </header>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando tarea...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="error-msg glass-panel">
+        {{ error }}
+    </div>
+
+    <div *ngIf="!loading && assignment" class="content-grid">
+        <!-- Description Column -->
+        <div class="main-column">
+            <div class="glass-panel description-card">
+                <h2>Instrucciones</h2>
+                <div [innerHTML]="assignment.intro" class="description-content"></div>
+
+                <div *ngIf="assignment.introfiles?.length" class="attachments">
+                    <h3>Archivos adjuntos:</h3>
+                    <div *ngFor="let file of assignment.introfiles" class="file-item">
+                        <a [href]="file.fileurl + '&token=' + (moodle.config$ | async)?.token" target="_blank">
+                            📄 {{ file.filename }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Column -->
+        <div class="side-column">
+            <div class="glass-panel status-card">
+                <h2>Estado de la entrega</h2>
+
+                <div class="status-row">
+                    <span class="label">Estado:</span>
+                    <span class="value badge" [class.submitted]="isSubmitted()" [class.pending]="!isSubmitted()">
+                        {{ isSubmitted() ? 'Enviado para calificar' : 'No entregado' }}
+                    </span>
+                </div>
+
+                <div class="status-row">
+                    <span class="label">Calificación:</span>
+                    <span class="value">{{ getGrade() || 'Sin calificar' }}</span>
+                </div>
+
+                <div class="status-row">
+                    <span class="label">Fecha de entrega:</span>
+                    <span class="value">{{ assignment.duedate * 1000 | date:'medium' }}</span>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" [disabled]="true">
+                        {{ isSubmitted() ? 'Editar entrega' : 'Agregar entrega' }}
+                    </button>
+                    <p class="note" *ngIf="true">Funcionalidad de entrega próximamente.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,155 @@
+<div class="calendar-container" [class.widget-mode]="isWidget">
+    <!-- View Mode Selector -->
+    <div class="view-controls" *ngIf="!isWidget">
+        <div class="view-tabs">
+            <button [class.active]="viewMode === 'month'" (click)="setViewMode('month')">
+                📅 Mes
+            </button>
+            <button [class.active]="viewMode === 'week'" (click)="setViewMode('week')">
+                📆 Semana
+            </button>
+            <button [class.active]="viewMode === 'day'" (click)="setViewMode('day')">
+                📋 Día
+            </button>
+        </div>
+        <button class="today-btn" (click)="goToToday()">Hoy</button>
+    </div>
+
+    <!-- Calendar Grid Section -->
+    <div class="calendar-section">
+        <div class="calendar-header">
+            <button class="nav-btn" (click)="prev()">❮</button>
+            <h2 *ngIf="viewMode === 'month'">{{ currentDate | date:'MMMM yyyy' }}</h2>
+            <h2 *ngIf="viewMode === 'week'">{{ getWeekRangeText() }} {{ currentDate | date:'yyyy' }}</h2>
+            <h2 *ngIf="viewMode === 'day'">{{ selectedDate | date:'EEEE, d MMMM yyyy' }}</h2>
+            <button class="nav-btn" (click)="next()">❯</button>
+        </div>
+
+        <!-- MONTH VIEW -->
+        <ng-container *ngIf="viewMode === 'month'">
+            <div class="weekdays">
+                <div class="weekday" *ngFor="let day of weekDayNames">{{ day }}</div>
+            </div>
+
+            <div class="days-grid">
+                <div *ngFor="let date of daysInMonth" class="day-cell" [class.other-month]="!isSameMonth(date)"
+                    [class.today]="isToday(date)" [class.selected]="isSelected(date)"
+                    [class.has-events]="hasEvents(date)" (click)="selectDate(date)">
+                    <span class="day-number">{{ date | date:'d' }}</span>
+                    <div class="event-dot" *ngIf="hasEvents(date)"></div>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- WEEK VIEW -->
+        <ng-container *ngIf="viewMode === 'week'">
+            <div class="week-view">
+                <div class="week-header">
+                    <div class="week-day-header" *ngFor="let day of daysInWeek" [class.today]="isToday(day)"
+                        [class.selected]="isSelected(day)" (click)="selectDate(day)">
+                        <span class="week-day-name">{{ day | date:'EEE' }}</span>
+                        <span class="week-day-number">{{ day | date:'d' }}</span>
+                    </div>
+                </div>
+                <div class="week-body">
+                    <div class="week-day-column" *ngFor="let day of daysInWeek" [class.today]="isToday(day)"
+                        (click)="selectDate(day)">
+                        <div class="week-event" *ngFor="let event of getEventsForDate(day)"
+                            [ngClass]="'type-' + event.eventtype">
+                            <span class="event-time-mini">{{ event.timestart * 1000 | date:'HH:mm' }}</span>
+                            <span class="event-name-mini">{{ event.name }}</span>
+                        </div>
+                        <div class="empty-day" *ngIf="getEventsForDate(day).length === 0">
+                            <span class="empty-text">Sin eventos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- DAY VIEW -->
+        <ng-container *ngIf="viewMode === 'day'">
+            <div class="day-view">
+                <div class="hour-row" *ngFor="let hour of hoursOfDay">
+                    <div class="hour-label">{{ hour }}:00</div>
+                    <div class="hour-content">
+                        <div class="day-event" *ngFor="let event of getEventsForHour(hour)"
+                            [ngClass]="'type-' + event.eventtype">
+                            <span class="event-icon">{{ getEventIcon(event) }}</span>
+                            <div class="event-info">
+                                <span class="event-name">{{ event.name }}</span>
+                                <span class="event-course" *ngIf="event.course">{{ event.course.fullname }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <div class="loading-overlay" *ngIf="loading">
+            <div class="spinner-small"></div>
+        </div>
+    </div>
+
+    <!-- Selected Day Events List (for Month/Week views) -->
+    <div class="events-section" *ngIf="!isWidget && viewMode !== 'day'">
+        <div class="events-header">
+            <h3>{{ selectedDate | date:'EEEE, d MMMM' }}</h3>
+            <span class="event-count">{{ selectedDateEvents.length }} eventos</span>
+        </div>
+
+        <div class="events-list">
+            <div *ngFor="let event of selectedDateEvents" class="event-card" [ngClass]="'type-' + event.eventtype">
+                <div class="event-time">
+                    {{ event.timestart * 1000 | date:'shortTime' }}
+                </div>
+                <div class="event-details">
+                    <h4 class="event-title">{{ event.name }}</h4>
+                    <p class="event-course" *ngIf="event.course">{{ event.course.fullname }}</p>
+                    <div class="event-meta">
+                        <span class="badge">{{ event.eventtype }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="selectedDateEvents.length === 0">
+                <div class="illustration">📅</div>
+                <p>No hay eventos programados.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Activities Widget -->
+    <div class="pending-section" *ngIf="!isWidget">
+        <div class="pending-header">
+            <h3>⚡ Actividades Pendientes</h3>
+            <span class="pending-count" *ngIf="pendingActivities.length > 0">{{ pendingActivities.length }}</span>
+        </div>
+
+        <div class="pending-list" *ngIf="!loadingPending">
+            <div *ngFor="let activity of pendingActivities" class="pending-item"
+                [ngClass]="getUrgencyClass(activity.timestart)"
+                [routerLink]="activity.url ? null : ['/course', activity.courseid]">
+                <div class="pending-icon">{{ getEventIcon(activity) }}</div>
+                <div class="pending-info">
+                    <span class="pending-name">{{ activity.name }}</span>
+                    <span class="pending-course" *ngIf="activity.course">{{ activity.course.fullname }}</span>
+                </div>
+                <div class="pending-due">
+                    <span class="due-label">{{ getDaysUntil(activity.timestart) }}</span>
+                    <span class="due-time">{{ activity.timestart * 1000 | date:'dd/MM HH:mm' }}</span>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="pendingActivities.length === 0">
+                <div class="illustration">🎉</div>
+                <p>¡No tienes actividades pendientes!</p>
+            </div>
+        </div>
+
+        <div class="loading-state" *ngIf="loadingPending">
+            <div class="spinner-small"></div>
+            <p>Cargando actividades...</p>
+        </div>
+    </div>
+</div>

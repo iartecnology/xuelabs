@@ -1,0 +1,31 @@
+<div class="activities-card">
+    <h3>Actividad Reciente</h3>
+
+    <!-- Loading state -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner-small"></div>
+        <p>Cargando actividades...</p>
+    </div>
+
+    <!-- Activities list -->
+    <div class="activity-list" *ngIf="!loading && activities.length > 0">
+        <div class="activity-item" *ngFor="let activity of activities"
+            [routerLink]="activity.courseId ? ['/course', activity.courseId] : null">
+            <div class="activity-icon" [style.background]="activity.color + '20'" [style.color]="activity.color">
+                {{ activity.icon }}
+            </div>
+            <div class="activity-content">
+                <h4>{{ activity.title }}</h4>
+                <p>{{ activity.course }}</p>
+            </div>
+            <span class="time">{{ activity.time }}</span>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && activities.length === 0">
+        <div class="empty-icon">📭</div>
+        <p>No hay actividad reciente</p>
+        <span class="hint">Las actividades de tus cursos aparecerán aquí</span>
+    </div>
+</div>

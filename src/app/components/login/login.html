@@ -1,0 +1,50 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="brand-header">
+            <img src="https://iartecnology.com/xuelabs/pluginfile.php/1/theme_edumy/headerlogo1/1764817509/xuelab.png"
+                alt="XUe LABS" class="logo">
+            <h1>Bienvenido</h1>
+            <p class="subtitle">Ingresa a tu plataforma de aprendizaje</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="login-form">
+
+
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" [(ngModel)]="username" name="username"
+                        placeholder="Tu nombre de usuario" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input [type]="showPassword ? 'text' : 'password'" id="password" [(ngModel)]="password"
+                        name="password" placeholder="Tu contraseña" required>
+                    <button type="button" class="toggle-password" (click)="togglePassword()">
+                        {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="error" class="error-message">
+                {{ error }}
+            </div>
+
+            <button type="submit" class="btn-primary btn-login" [disabled]="isLoading">
+                <span *ngIf="!isLoading">Iniciar Sesión</span>
+                <span *ngIf="isLoading" class="loader"></span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>¿Olvidaste tu contraseña? <a href="#">Recuperar</a></p>
+            <p style="margin-top: 1rem;"><a routerLink="/config"
+                    style="color: #64748b; text-decoration: none; font-size: 0.9em;">🛠️ Configuración Avanzada</a></p>
+        </div>
+    </div>
+</div>

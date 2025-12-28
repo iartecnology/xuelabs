@@ -1,0 +1,48 @@
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h1>Centro de Notificaciones</h1>
+        <p class="subtitle">Mantente al día con tus actividades</p>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando notificaciones...</p>
+    </div>
+
+    <div class="notifications-list" *ngIf="!loading">
+        <div *ngFor="let notif of notifications" class="notification-card" [class.unread]="!notif.read">
+            <div class="notif-left">
+                <div class="notif-icon-wrapper">
+                    <!-- Try to use Moodle icon, fallback to bell -->
+                    <img [src]="getNotificationIcon(notif)" class="notif-icon"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <span class="fallback-icon" style="display:none">🔔</span>
+                </div>
+            </div>
+
+            <div class="notif-content">
+                <div class="notif-meta">
+                    <span class="subject">{{ notif.subject }}</span>
+                    <span class="time">{{ notif.timecreated * 1000 | date:'MMM d, h:mm a' }}</span>
+                </div>
+
+                <!-- Display message safely -->
+                <div class="body" [innerHTML]="notif.fullmessagehtml || notif.smallmessage || notif.fullmessage"></div>
+
+                <div class="notif-actions" *ngIf="notif.contexturl">
+                    <a [href]="notif.contexturl" target="_blank" class="view-btn">
+                        {{ notif.contexturlname || 'Ver más' }} →
+                    </a>
+                </div>
+            </div>
+
+            <div class="unread-dot" *ngIf="!notif.read" title="No leído"></div>
+        </div>
+
+        <div class="empty-state" *ngIf="notifications.length === 0">
+            <div class="empty-icon">🎉</div>
+            <h3>Estás al día</h3>
+            <p>No tienes notificaciones nuevas.</p>
+        </div>
+    </div>
+</div>

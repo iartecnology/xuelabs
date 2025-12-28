@@ -1,0 +1,278 @@
+<div class="viewer-layout" [class.index-open]="isMobileIndexOpen">
+    <!-- Mobile Top Header -->
+    <div class="mobile-viewer-header">
+        <button class="mobile-btn-back" (click)="goBack()">
+            <span class="icon">←</span>
+        </button>
+        <div class="mobile-course-info">
+            <span class="mobile-course-name">{{ courseTitle }}</span>
+        </div>
+        <button class="mobile-btn-index" (click)="toggleMobileIndex()">
+            <span class="icon">☰</span>
+        </button>
+    </div>
+
+    <!-- Sidebar / Playlist -->
+    <aside class="course-sidebar" [class.active]="isMobileIndexOpen">
+        <div class="mobile-sidebar-header">
+            <h3>Contenido del Curso</h3>
+            <button class="btn-close-sidebar" (click)="closeMobileIndex()">✕</button>
+        </div>
+        <div class="sidebar-header">
+            <button [routerLink]="['/dashboard']" class="btn-back">
+                <span class="arrow">←</span> Dashboard
+            </button>
+            <h2 class="course-title-sidebar">Contenido del Curso</h2>
+
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span class="progress-label">Progreso del Curso</span>
+                    <span class="progress-percentage">{{ courseProgress }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="courseProgress"></div>
+                </div>
+            </div>
+
+            <!-- Grades Button -->
+            <button [routerLink]="['/course', courseId, 'grades']" class="btn-grades">
+                📊 Ver Calificaciones
+            </button>
+        </div>
+
+        <div class="modules-scroll">
+            <div *ngIf="loading" class="sidebar-loading">
+                <div class="spinner-sm"></div>
+            </div>
+
+            <!-- Special Module: Course Description -->
+            <div *ngIf="courseDescription" class="section-block">
+                <div class="section-header">
+                    <h3>Información del Curso</h3>
+                </div>
+                <div class="modules-list">
+                    <div class="module-item" [class.active]="selectedModule === null && showingDescription"
+                        (click)="selectDescription()">
+                        <div class="module-icon">📋</div>
+                        <div class="module-info">
+                            <span class="module-name">Descripción General</span>
+                            <span class="module-type">información</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements -->
+            <div *ngIf="announcements.length > 0" class="info-section">
+                <div class="info-header">
+                    <span class="info-icon">📢</span>
+                    <h3>Avisos Recientes</h3>
+                </div>
+                <div class="announcements-list">
+                    <div *ngFor="let announcement of announcements" class="announcement-item"
+                        [class.active]="selectedAnnouncement?.id === announcement.id"
+                        (click)="selectAnnouncement(announcement)">
+                        <div class="announcement-header">
+                            <span class="announcement-title">{{ announcement.name }}</span>
+                            <span class="announcement-date">{{ announcement.timemodified * 1000 | date:'short' }}</span>
+                        </div>
+                        <div class="announcement-preview">{{ announcement.message | slice:0:100 }}...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngFor="let section of sections" class="section-block">
+                <div class="section-header" *ngIf="section.modules && section.modules.length > 0">
+                    <h3>{{ section.name }}</h3>
+                </div>
+
+                <div class="modules-list">
+                    <ng-container *ngFor="let mod of section.modules">
+                        <!-- Skip labels and forums for now if desired, keeping labels only if they have useful titles -->
+                        <div *ngIf="mod.modname !== 'label'" class="module-item"
+                            [class.active]="selectedModule?.id === mod.id" (click)="selectModule(mod, section.id)">
+
+                            <div class="module-icon">
+                                {{ getModuleIcon(mod.modname) }}
+                            </div>
+                            <div class="module-info">
+                                <span class="module-name">{{ mod.name }}</span>
+                                <span class="module-type">{{ mod.modname }}</span>
+                            </div>
+
+                            <!-- Completion Checkbox -->
+                            <div class="module-status" *ngIf="mod.completiondata">
+                                <input type="checkbox" class="completion-checkbox"
+                                    [checked]="mod.completiondata.state === 1" [disabled]="!canToggleCompletion(mod)"
+                                    (click)="toggleCompletion(mod, $event)"
+                                    [title]="canToggleCompletion(mod) ? 'Marcar como completado' : 'Completado automáticamente'" />
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" *ngIf="isMobileIndexOpen" (click)="closeMobileIndex()"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-stage">
+        <header class="content-header" *ngIf="selectedModule">
+            <div class="header-left">
+                <h1>{{ selectedModule.name }}</h1>
+                <span class="badge">{{ selectedModule.modname }} (ID: {{ selectedModule.id }})</span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div *ngIf="!selectedModule && !showingDescription && !loading" class="empty-selection">
+                <div class="placeholder-icon">📚</div>
+                <p>Selecciona un módulo del menú lateral</p>
+            </div>
+
+            <div *ngIf="loading" class="loading-stage">
+                <div class="spinner"></div>
+                <p>Cargando contenido...</p>
+            </div>
+
+            <!-- Content Renderers -->
+            <div *ngIf="selectedModule || showingDescription || selectedAnnouncement" class="content-renderer">
+
+                <!-- 0. Course Description -->
+                <div *ngIf="showingDescription && !selectedModule && !selectedAnnouncement" class="description-content">
+                    <h2>📋 Descripción General del Curso</h2>
+                    <div class="description-html" [innerHTML]="safeCourseDescription"></div>
+                </div>
+
+                <!-- 0.5 Announcement Content -->
+                <div *ngIf="selectedAnnouncement && !selectedModule" class="announcement-content">
+                    <h2>📢 {{ selectedAnnouncement.name }}</h2>
+                    <p class="announcement-meta">
+                        Publicado el {{ selectedAnnouncement.timemodified * 1000 | date:'medium' }}
+                    </p>
+                    <div class="announcement-body" [innerHTML]="safeHtmlContent"></div>
+                </div>
+
+                <!-- 1. Assignments -->
+                <ng-container *ngIf="selectedModule?.modname === 'assign'">
+                    <app-assignment-viewer [courseId]="courseId" [assignmentId]="selectedModule!.instance">
+                    </app-assignment-viewer>
+                </ng-container>
+
+                <!-- 1.5 Quizzes -->
+                <ng-container *ngIf="selectedModule?.modname === 'quiz'">
+                    <app-quiz-viewer [courseId]="courseId" [instanceId]="selectedModule!.instance">
+                    </app-quiz-viewer>
+                </ng-container>
+
+
+
+                <!-- 2. Module HTML Content (for page, book, etc.) -->
+                <div *ngIf="selectedModule && safeHtmlContent && !safeUrl && (contentViewerType === 'none' || contentViewerType === 'html')"
+                    class="module-html-content">
+                    <div class="html-body" [innerHTML]="safeHtmlContent"></div>
+                </div>
+
+                <!-- 3. PDF Viewer (Integrated) -->
+                <div *ngIf="contentViewerType === 'pdf'" class="content-viewer pdf-viewer">
+                    <div class="viewer-header">
+                        <button class="btn-close-viewer" (click)="closeContentViewer()">
+                            ← Volver
+                        </button>
+                        <h3>{{ contentViewerTitle }}</h3>
+                    </div>
+                    <pdf-viewer [src]="contentViewerUrl" [render-text]="true" [original-size]="false" [show-all]="true"
+                        [fit-to-page]="true" style="width: 100%; height: calc(100vh - 200px);">
+                    </pdf-viewer>
+                </div>
+
+                <!-- 4. Video Player (Integrated) -->
+                <div *ngIf="contentViewerType === 'video'" class="content-viewer video-viewer">
+                    <div class="viewer-header">
+                        <button class="btn-close-viewer" (click)="closeContentViewer()">
+                            ← Volver
+                        </button>
+                        <h3>{{ contentViewerTitle }}</h3>
+                    </div>
+                    <video controls [src]="contentViewerUrl" class="integrated-video-player">
+                        Tu navegador no soporta video HTML5.
+                    </video>
+                </div>
+
+                <!-- 5. External URL Viewer (Controlled iframe) -->
+                <div *ngIf="contentViewerType === 'external'" class="content-viewer external-viewer">
+                    <div class="viewer-header">
+                        <button class="btn-close-viewer" (click)="closeContentViewer()">
+                            ← Volver
+                        </button>
+                        <h3>{{ contentViewerTitle }}</h3>
+                        <span class="external-url">🔗 {{ contentViewerUrl }}</span>
+                    </div>
+                    <iframe [src]="safeUrl" class="external-iframe" frameborder="0" allowfullscreen></iframe>
+                </div>
+
+                <!-- Iframe for embedded content -->
+                <div *ngIf="safeUrl && (contentViewerType === 'none' || contentViewerType === 'iframe')"
+                    class="iframe-container">
+                    <div class="iframe-header-tools">
+                        <span class="iframe-hint">Si el contenido no carga o pide login:</span>
+                        <a [href]="selectedModule?.url" target="_blank" class="btn-micro-action">Abrir en Nueva Ventana
+                            ↗</a>
+                    </div>
+                    <iframe [src]="safeUrl" frameborder="0" allowfullscreen></iframe>
+                </div>
+
+                <!-- Loading State for SafeUrl - Only show when actually loading and no content ready -->
+                <div *ngIf="loadingSafeUrl && !safeHtmlContent && !safeUrl" class="loading-stage">
+                    <div class="spinner"></div>
+                    <p>Preparando sesión segura...</p>
+                    <p class="hint-text">Si tarda demasiado, intenta abrirlo directamente.</p>
+                    <a [href]="selectedModule?.url" target="_blank" class="btn-micro-action" style="margin-top: 15px;">
+                        Abrir Actividad Directamente ↗
+                    </a>
+                </div>
+
+                <!-- 5. Fallback for content that truly cannot be rendered -->
+                <div *ngIf="selectedModule && selectedModule.modname !== 'assign' && selectedModule.modname !== 'resource' && !safeUrl && !safeHtmlContent && !loadingSafeUrl"
+                    class="fallback-card">
+                    <div class="fallback-icon">🔗</div>
+                    <h3>Contenido Adicional: {{ selectedModule?.name }}</h3>
+                    <p>Esta actividad ({{ selectedModule?.modname }}) puede tardar un momento en cargar o requiere
+                        acceso directo.</p>
+                    <div class="fallback-actions">
+                        <a [href]="selectedModule?.url" target="_blank" class="btn-secondary-action">
+                            Abrir en Nueva Ventana ↗
+                        </a>
+                        <p class="hint-text">Si la ventana no se abre, revisa el bloqueador de elementos emergentes.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Navigation Footer -->
+            <div class="navigation-footer" *ngIf="selectedModule">
+                <div class="nav-footer-left">
+                    <button class="nav-btn nav-prev" [disabled]="!hasPrevious()" (click)="goToPrevious()">
+                        <span class="nav-icon">←</span>
+                        <span class="nav-text">Anterior</span>
+                    </button>
+                </div>
+
+                <div class="nav-indicator">
+                    <span class="current-position">{{ getCurrentPosition() }}</span>
+                    <span class="separator">/</span>
+                    <span class="total-modules">{{ getTotalModules() }}</span>
+                </div>
+
+                <button class="nav-btn nav-next" [disabled]="!hasNext()" (click)="goToNext()">
+                    <span class="nav-text">Siguiente</span>
+                    <span class="nav-icon">→</span>
+                </button>
+            </div>
+        </div>
+    </main>
+</div>

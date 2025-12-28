@@ -1,0 +1,149 @@
+<div class="grades-container">
+    <div class="grades-header">
+        <button class="btn-back" onclick="history.back()">
+            <span>←</span> Volver al Curso
+        </button>
+        <h1>📊 Calificaciones del Curso</h1>
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando calificaciones...</p>
+    </div>
+
+    <div *ngIf="error" class="error-state">
+        <div class="error-icon">⚠️</div>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="loadGrades()">Reintentar</button>
+    </div>
+
+    <div *ngIf="!loading && !error" class="grades-content">
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card main-card">
+                <div class="card-icon">🎯</div>
+                <div class="card-content">
+                    <span class="card-label">Promedio General</span>
+                    <span class="card-value">{{ courseGrade }}%</span>
+                    <div class="card-progress">
+                        <div class="progress-bar-mini">
+                            <div class="progress-fill-mini" [style.width.%]="courseGrade"
+                                [style.background-color]="getGradeColor(courseGrade)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="card-icon">📝</div>
+                <div class="card-content">
+                    <span class="card-label">Actividades Calificadas</span>
+                    <span class="card-value">{{ gradedCount }} / {{ totalCount }}</span>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="card-icon">⭐</div>
+                <div class="card-content">
+                    <span class="card-label">Calificación Más Alta</span>
+                    <span class="card-value">{{ highestGrade }}%</span>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="card-icon">📈</div>
+                <div class="card-content">
+                    <span class="card-label">Calificación Más Baja</span>
+                    <span class="card-value">{{ lowestGrade }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <button class="filter-btn" [class.active]="selectedFilter === 'all'" (click)="filterGrades('all')">
+                Todas ({{ gradeItems.length }})
+            </button>
+            <button class="filter-btn" [class.active]="selectedFilter === 'graded'" (click)="filterGrades('graded')">
+                Calificadas ({{ gradedCount }})
+            </button>
+            <button class="filter-btn" [class.active]="selectedFilter === 'pending'" (click)="filterGrades('pending')">
+                Pendientes ({{ totalCount - gradedCount }})
+            </button>
+        </div>
+
+        <!-- Grades Table -->
+        <div class="grades-table-container">
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Actividad</th>
+                        <th>Tipo</th>
+                        <th>Calificación</th>
+                        <th>Porcentaje</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of filteredGrades" [class.course-total]="item.itemtype === 'course'"
+                        [class.expanded]="expandedItem === item.id">
+                        <td>
+                            <div class="item-name">
+                                <span class="item-icon">{{ getModuleIcon(item.itemmodule) }}</span>
+                                {{ item.itemname }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="item-badge" *ngIf="item.itemmodule">
+                                {{ item.itemmodule }}
+                            </span>
+                        </td>
+                        <td class="grade-value">
+                            <span [style.color]="getGradeColor(item.percentage)">
+                                {{ item.gradeformatted }}
+                            </span>
+                            <span class="grade-max"> / {{ item.grademax }}</span>
+                        </td>
+                        <td>
+                            <div class="percentage-bar">
+                                <div class="percentage-fill" [style.width.%]="item.percentage"
+                                    [style.background-color]="getGradeColor(item.percentage)">
+                                </div>
+                                <span class="percentage-text">{{ item.percentage }}%</span>
+                            </div>
+                        </td>
+                        <td class="grade-date">
+                            <span *ngIf="item.dategraded > 0">
+                                {{ item.dategraded * 1000 | date:'short' }}
+                            </span>
+                            <span *ngIf="item.dategraded === 0" class="text-muted">-</span>
+                        </td>
+                        <td class="grade-status">
+                            <span class="status-icon">{{ getGradeIcon(item.percentage) }}</span>
+                        </td>
+                        <td>
+                            <button class="btn-expand" *ngIf="item.feedback" (click)="toggleExpand(item.id)">
+                                {{ expandedItem === item.id ? '▼' : '▶' }}
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="expandedItem && getExpandedItem()" class="expanded-row">
+                        <td colspan="7">
+                            <div class="feedback-section">
+                                <h4>💬 Retroalimentación del Profesor</h4>
+                                <div class="feedback-content" [innerHTML]="getExpandedItem()?.feedback"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="filteredGrades.length === 0" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No hay calificaciones que coincidan con el filtro seleccionado</p>
+        </div>
+    </div>
+</div>

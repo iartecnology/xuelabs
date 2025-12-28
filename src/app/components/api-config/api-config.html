@@ -1,0 +1,367 @@
+<div class="config-container">
+
+    <!-- Tabs for Admin -->
+    <div class="config-tabs" *ngIf="currentUser?.userissiteadmin">
+        <button class="tab-btn" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
+            ⚙️ Configuración
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'admin'" (click)="activeTab = 'admin'">
+            🛠️ Administración
+        </button>
+    </div>
+
+    <!-- CONFIG TAB CONTENT -->
+    <div class="tab-content" [class.hidden]="activeTab !== 'config' && currentUser?.userissiteadmin">
+        <div class="config-card">
+            <div class="card-header">
+                <div class="icon-wrapper">
+                    ⚙️
+                </div>
+                <h2>Conexión API Moodle</h2>
+                <p>Configura la conexión con tu servidor Moodle para sincronizar cursos y actividades.</p>
+            </div>
+
+            <form (ngSubmit)="saveConfig()">
+                <div class="form-group">
+                    <label for="url">URL del Servidor Moodle</label>
+                    <input type="url" id="url" [(ngModel)]="config.url" name="url"
+                        placeholder="https://moodle.ejemplo.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="token">Token de Servicio Web</label>
+                    <input type="password" id="token" [(ngModel)]="config.token" name="token"
+                        placeholder="Pegar token aquí">
+                    <small>Genera este token en: Administración del sitio > Plugins > Servicios Web</small>
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" [(ngModel)]="config.autoConnect" name="autoConnect">
+                        Conectar automáticamente al iniciar
+                    </label>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary" [disabled]="testing">
+                        <span *ngIf="!testing">Guardar y Probar Conexión</span>
+                        <span *ngIf="testing">Probando conexión...</span>
+                    </button>
+                </div>
+
+                <div class="status-message success" *ngIf="testResult === 'success'">
+                    ✅ Conexión exitosa con Moodle
+                </div>
+
+                <div class="status-message error" *ngIf="testResult === 'error'">
+                    ❌ {{ errorMessage }}
+                </div>
+            </form>
+        </div>
+
+
+        <!-- Branding Section (Logo) -->
+        <div class="config-card theme-section">
+            <div class="card-header">
+                <div class="icon-wrapper" style="background: var(--neutral-100); color: var(--neutral-600);">
+                    🏢
+                </div>
+                <h2>Logo de Cabecera</h2>
+                <p>Personaliza el logotipo que aparece en la parte superior.</p>
+            </div>
+
+            <div class="logo-preview-container"
+                style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px dashed var(--neutral-200);">
+                <img [src]="currentLogo" alt="Logo actual"
+                    style="max-height: 80px; max-width: 100%; object-fit: contain;">
+            </div>
+
+            <div class="actions" style="margin-top: 1rem; justify-content: center;">
+                <button type="button" class="btn-secondary" (click)="logoInput.click()">
+                    📂 Subir Logo
+                </button>
+                <button type="button" class="btn-secondary" (click)="resetLogo()">
+                    ↺ Reset
+                </button>
+                <input #logoInput type="file" (change)="onLogoFileSelected($event)" accept="image/*"
+                    style="display: none;">
+            </div>
+        </div>
+
+        <!-- Branding Section (Icon) -->
+        <div class="config-card theme-section">
+            <div class="card-header">
+                <div class="icon-wrapper" style="background: #e0f2fe; color: #0369a1;">
+                    🎯
+                </div>
+                <h2>Icono de Aplicación</h2>
+                <p>Este icono se usará para el acceso directo en el móvil (PWA) y el favicon.</p>
+            </div>
+
+            <div class="icon-preview-container"
+                style="text-align: center; margin-bottom: 2rem; display: flex; justify-content: center;">
+                <div
+                    style="padding: 1rem; background: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <img [src]="currentIcon" alt="Icono actual"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label for="appName" style="font-size: 0.9rem; color: var(--text-secondary);">Nombre de la Aplicación
+                    (PWA)</label>
+                <input type="text" id="appName" [(ngModel)]="currentAppName" (ngModelChange)="updateAppName($event)"
+                    placeholder="Ej: Mi Academia">
+                <small>Este es el nombre que verán los usuarios en su pantalla de inicio.</small>
+            </div>
+
+            <div class="actions" style="margin-top: 1rem; justify-content: center;">
+                <button type="button" class="btn-secondary" (click)="iconInput.click()">
+                    📂 Subir Icono
+                </button>
+                <button type="button" class="btn-secondary" (click)="resetIcon()">
+                    ↺ Reset
+                </button>
+                <input #iconInput type="file" (change)="onIconFileSelected($event)" accept="image/*"
+                    style="display: none;">
+            </div>
+        </div>
+
+        <div class="config-card theme-section">
+            <div class="card-header">
+                <div class="icon-wrapper" style="background: var(--primary-100); color: var(--primary-600);">
+                    🎨
+                </div>
+                <h2>Personalización</h2>
+                <p>Elige el color principal de tu plataforma.</p>
+            </div>
+
+            <div class="theme-grid">
+                <button *ngFor="let theme of availableThemes" class="theme-btn"
+                    [class.active]="currentTheme === theme.name" (click)="setTheme(theme.name)" type="button">
+                    <div class="color-preview" [style.background]="theme.colors['500']"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">{{ theme.label }}</span>
+                    </div>
+                    <div class="check-icon" *ngIf="currentTheme === theme.name">✓</div>
+                </button>
+
+                <!-- Custom Theme -->
+                <button class="theme-btn custom-theme-btn" [class.active]="currentTheme === 'custom'"
+                    (click)="setTheme('custom')" type="button">
+                    <div class="color-preview" [style.background]="customColor"
+                        style="position: relative; overflow: hidden;">
+                        <input type="color" [value]="customColor" (input)="onCustomColorChange($event)"
+                            style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; opacity: 0; cursor: pointer;">
+                    </div>
+                    <div class="theme-info">
+                        <span class="theme-name">Personalizado</span>
+                    </div>
+                    <div class="check-icon" *ngIf="currentTheme === 'custom'">✓</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PWA Install Section -->
+        <div class="config-card pwa-section">
+            <div class="card-header">
+                <div class="icon-wrapper" style="background: #dcfce7; color: #16a34a;">
+                    📱
+                </div>
+                <h2>Instalar Aplicación</h2>
+                <p>Usa la plataforma como una app nativa en tu móvil para un acceso más rápido y mejor experiencia.</p>
+            </div>
+
+            <div class="pwa-content" style="padding: 1.5rem; text-align: center;">
+                <!-- Fallback when already installed or not supported -->
+                <div *ngIf="!showInstallBtn && !showIOSInstructions">
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        Esta plataforma ya está optimizada para dispositivos móviles.
+                        Si no ves el botón de instalación, es posible que ya la tengas instalada o estés en un navegador
+                        no compatible.
+                    </p>
+                    <div style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem;">
+                        Recomendamos usar <strong>Chrome</strong> en Android o <strong>Safari</strong> en iOS.
+                    </div>
+                </div>
+
+                <!-- Android / Chrome / Windows -->
+                <div *ngIf="showInstallBtn">
+                    <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Tienes disponible la versión
+                        instalable para este dispositivo.</p>
+                    <button type="button" class="btn-primary" (click)="installPWA()"
+                        style="width: 100%; max-width: 300px;">
+                        📥 Instalar ahora
+                    </button>
+                </div>
+
+                <!-- iOS Instructions -->
+                <div *ngIf="showIOSInstructions && !showInstallBtn" class="ios-guide"
+                    style="text-align: left; background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <p style="font-weight: 700; margin-bottom: 1rem; color: #1e293b;">Para instalar en tu iPhone:</p>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span
+                                style="background: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid #cbd5e1; flex-shrink: 0;">1</span>
+                            <span>Pulsa el botón <strong>Compartir</strong> <span
+                                    style="font-size: 1.2rem; margin: 0 4px;">⎋</span> (o 📤) en la barra de
+                                Safari.</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span
+                                style="background: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid #cbd5e1; flex-shrink: 0;">2</span>
+                            <span>Busca y pulsa <strong>"Agregar a la panta. de inicio"</strong> <span
+                                    style="font-size: 1.2rem; margin: 0 4px;">⊞</span>.</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span
+                                style="background: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid #cbd5e1; flex-shrink: 0;">3</span>
+                            <span>Pulsa <strong>"Agregar"</strong> en la parte superior derecha.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN TAB CONTENT -->
+    <div class="tab-content admin-content" *ngIf="activeTab === 'admin' && currentUser?.userissiteadmin">
+        <div class="admin-header" style="text-align: center; margin-bottom: 3rem; max-width: 900px;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Explorador de Contenido 📚</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">Visualiza y organiza las categorías y cursos de tu
+                servidor Moodle.</p>
+
+            <!-- Info box about creation limitations -->
+            <div
+                style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 1.5rem; border-radius: 12px; text-align: left; margin-top: 2rem;">
+                <div style="display: flex; align-items: start; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">ℹ️</span>
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #92400e; font-size: 1.1rem;">Creación de Contenido</h4>
+                        <p style="margin: 0; color: #78350f; line-height: 1.6;">
+                            Por razones de seguridad, Moodle 4.1 no permite crear categorías ni cursos vía API externa.
+                            Para crear nuevo contenido, accede al <strong>panel de administración web de Moodle</strong>
+                            en <a href="https://iartecnology.com/xuelabs/admin" target="_blank"
+                                style="color: #92400e; text-decoration: underline;">iartecnology.com/xuelabs/admin</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Content List -->
+        <div class="admin-header" style="text-align: center; margin: 4rem 0 3rem 0; width: 100%;">
+            <h2 style="font-size: 2rem;">Contenido Existente en Moodle</h2>
+            <p>Visualiza y organiza las categorías y cursos actuales.</p>
+        </div>
+
+        <div class="admin-grid" style="grid-template-columns: 1fr;">
+            <div class="admin-panel" style="max-width: 100%;">
+                <h3>📋 Listado de Categorías y Cursos</h3>
+
+                <div class="existing-list" style="margin-top: 2rem;">
+                    <div *ngFor="let cat of categories" class="cat-accordion-item" style="margin-bottom: 1.5rem;">
+                        <!-- Category Header (Toggle) -->
+                        <div class="cat-toggle-header" (click)="toggleCategory(cat.id)"
+                            [style.background]="isCategoryExpanded(cat.id) ? 'var(--primary-50)' : 'var(--neutral-50)'"
+                            style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem; border-radius: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05);">
+
+                            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                                <span
+                                    style="font-size: 1.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📁</span>
+                                <div>
+                                    <h4
+                                        style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--primary-900);">
+                                        {{ cat.name }}</h4>
+                                    <small style="color: var(--text-muted); font-weight: 600;">{{ cat.coursecount }}
+                                        cursos</small>
+                                </div>
+                            </div>
+
+                            <span style="font-size: 1.2rem; transition: transform 0.4s;"
+                                [style.transform]="isCategoryExpanded(cat.id) ? 'rotate(180deg)' : 'rotate(0)'">
+                                🔽
+                            </span>
+                        </div>
+
+                        <!-- Courses List (Collapsible Content) -->
+                        <div class="courses-collapsible"
+                            [style.max-height]="isCategoryExpanded(cat.id) ? '2000px' : '0'"
+                            [style.opacity]="isCategoryExpanded(cat.id) ? '1' : '0'"
+                            style="overflow: hidden; transition: all 0.5s ease-in-out; margin-left: 2rem;">
+
+                            <div class="courses-subgrid"
+                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; padding: 1.5rem 0;">
+                                <ng-container *ngFor="let course of allCourses">
+                                    <div *ngIf="course.categoryid === cat.id" class="course-modern-pill"
+                                        style="padding: 1.25rem; background: white; border: 2px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 1rem; transition: all 0.3s;">
+
+                                        <div
+                                            style="width: 45px; height: 45px; background: var(--primary-50); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                                            🎓
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 800; font-size: 1rem; color: #1e293b;">{{
+                                                course.fullname }}</div>
+                                            <div
+                                                style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                {{ course.shortname }}</div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+                                <!-- Empty Category Message -->
+                                <div *ngIf="cat.coursecount === 0"
+                                    style="padding: 2rem; color: var(--text-muted); text-align: center; width: 100%; font-style: italic;">
+                                    No hay cursos registrados en esta categoría aún.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Cropping Modal -->
+    <div class="cropper-overlay" *ngIf="showCropper" (mousedown)="closeCropper()">
+        <div class="cropper-modal" (mousedown)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>✂️ Ajustar Imagen</h3>
+                <button type="button" class="close-btn" (click)="closeCropper()">✕</button>
+            </div>
+
+            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                Arrastra la imagen para centrarla y usa la barra inferior para el zoom.
+            </p>
+
+            <div class="cropper-viewport-container">
+                <div class="cropper-viewport" [class.circle]="cropType === 'icon'">
+                    <div class="image-container" (mousedown)="handleMouseDown($event)"
+                        (touchstart)="handleMouseDown($event)"
+                        [style.transform]="'translate(' + posX + 'px, ' + posY + 'px) scale(' + zoom + ')'">
+                        <img [src]="croppingImage" alt="A recortar"
+                            style="user-select: none; -webkit-user-drag: none; pointer-events: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="cropper-controls" style="margin-top: 2rem; width: 100%;">
+                <div class="zoom-control" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <span style="font-size: 1.2rem;">🔍</span>
+                    <input type="range" [(ngModel)]="zoom" min="0.1" max="5" step="0.05"
+                        style="flex: 1; height: 6px; border-radius: 3px; accent-color: var(--primary-600);">
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn-secondary" (click)="closeCropper()"
+                        style="flex: 1;">Cancelar</button>
+                    <button type="button" class="btn-primary" (click)="applyCrop()" style="flex: 2;">Guardar
+                        Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```

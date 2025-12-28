@@ -1,0 +1,290 @@
+<!-- Desktop Header with User Menu -->
+<div class="desktop-header">
+    <ng-container *ngIf="currentUser$ | async as user; else guestHeader">
+        <a routerLink="/messages" class="messages-btn" aria-label="Mensajes">
+            <span class="icon">💬</span>
+            <span class="badge" *ngIf="(unreadMessagesCount$ | async) as count">{{ count }}</span>
+        </a>
+        <a routerLink="/notifications" class="messages-btn" aria-label="Notificaciones">
+            <span class="icon">🔔</span>
+            <span class="badge" *ngIf="(unreadNotificationsCount$ | async) as count">{{ count }}</span>
+        </a>
+        <div class="user-menu-container">
+            <button class="user-avatar-btn" (click)="toggleUserMenu()" aria-label="User menu">
+                <div class="avatar" *ngIf="!user.profileimageurlsmall">
+                    {{ getUserInitials(user.fullname) }}
+                </div>
+                <img *ngIf="user.profileimageurlsmall" [src]="user.profileimageurlsmall" alt="Avatar" class="avatar">
+            </button>
+
+            <div class="user-dropdown" [class.active]="isUserMenuOpen">
+                <div class="user-dropdown-header">
+                    <div class="avatar" *ngIf="!user.profileimageurlsmall">
+                        {{ getUserInitials(user.fullname) }}
+                    </div>
+                    <img *ngIf="user.profileimageurlsmall" [src]="user.profileimageurlsmall" alt="Avatar"
+                        class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">{{ user.fullname }}</span>
+                        <span class="user-email">{{ user.roles || 'Estudiante' }}</span>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a routerLink="/profile" (click)="closeUserMenu()">
+                            <span class="menu-icon">👤</span>
+                            <span>Mi Perfil</span>
+                        </a>
+                    </li>
+                    <li *ngIf="user.userissiteadmin">
+                        <a routerLink="/config" (click)="closeUserMenu()">
+                            <span class="menu-icon">⚙️</span>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a (click)="logout()" class="logout-item">
+                            <span class="menu-icon">🚪</span>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #guestHeader>
+        <div class="guest-actions">
+            <a routerLink="/config" class="messages-btn" title="Configuración">⚙️</a>
+        </div>
+    </ng-template>
+</div>
+
+<!-- ======== MOBILE TOP HEADER (Centered Logo + User Bubble + Actions) ======== -->
+<div class="mobile-top-header">
+    <!-- User Bubble (Left) -->
+    <div class="header-left">
+        <div class="mobile-user-bubble" *ngIf="currentUser$ | async as user" (click)="toggleUserMenu()">
+            <div class="avatar-small" *ngIf="!user.profileimageurlsmall">
+                {{ getUserInitials(user.fullname) }}
+            </div>
+            <img *ngIf="user.profileimageurlsmall" [src]="user.profileimageurlsmall" alt="Avatar" class="avatar-small">
+        </div>
+        <div class="mobile-user-bubble guest" *ngIf="!(currentUser$ | async)" routerLink="/config">
+            <span class="icon">⚙️</span>
+        </div>
+    </div>
+
+    <!-- Centered Logo -->
+    <div class="mobile-logo-container">
+        <img [src]="themeService.currentLogo$ | async" alt="Logo" class="mobile-logo">
+    </div>
+
+    <!-- Desktop Sync Actions (Right) -->
+    <div class="mobile-actions">
+        <a routerLink="/messages" class="mobile-action-btn" aria-label="Mensajes">
+            <span class="icon">💬</span>
+            <span class="badge" *ngIf="(unreadMessagesCount$ | async) as count">{{ count }}</span>
+        </a>
+        <a routerLink="/notifications" class="mobile-action-btn" aria-label="Notificaciones">
+            <span class="icon">🔔</span>
+            <span class="badge" *ngIf="(unreadNotificationsCount$ | async) as count">{{ count }}</span>
+        </a>
+    </div>
+</div>
+
+<!-- Overlays -->
+<div class="mobile-overlay" [class.active]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+<div class="user-menu-overlay" [class.active]="isUserMenuOpen" (click)="closeUserMenu()"></div>
+
+<!-- Sidebar Navigation (Desktop) -->
+<nav class="sidebar" [class.mobile-open]="isMobileMenuOpen" [class.collapsed]="isSidebarCollapsed">
+    <div class="brand">
+        <img [src]="themeService.currentLogo$ | async" alt="Logo" class="logo">
+    </div>
+
+    <ul class="nav-links">
+        <li>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+                (click)="closeMobileMenu()">
+                <span class="icon">📊</span>
+                <span class="link-text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/courses" routerLinkActive="active" (click)="closeMobileMenu()">
+                <span class="icon">📚</span>
+                <span class="link-text">Mis Cursos</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/calendar" routerLinkActive="active" (click)="closeMobileMenu()">
+                <span class="icon">📅</span>
+                <span class="link-text">Calendario</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/messages" routerLinkActive="active" (click)="closeMobileMenu()">
+                <span class="icon">💬</span>
+                <span class="link-text">Mensajes</span>
+                <span class="nav-badge" *ngIf="(unreadMessagesCount$ | async) as count">{{ count }}</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/notifications" routerLinkActive="active" (click)="closeMobileMenu()">
+                <span class="icon">🔔</span>
+                <span class="link-text">Notificaciones</span>
+                <span class="nav-badge" *ngIf="(unreadNotificationsCount$ | async) as count">{{ count }}</span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <!-- Show Config if user is admin OR if user failed to load (so they can fix config) -->
+        <li *ngIf="(currentUser$ | async)?.userissiteadmin || !(currentUser$ | async)">
+            <a routerLink="/config" routerLinkActive="active" (click)="closeMobileMenu()">
+                <span class="icon">⚙️</span>
+                <span class="link-text">Configuración</span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li *ngIf="currentUser$ | async">
+            <a (click)="logout()" class="logout-link">
+                <span class="icon">🚪</span>
+                <span class="link-text">Cerrar Sesión</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Sidebar Footer User Profile -->
+    <div class="user-profile" *ngIf="currentUser$ | async as user">
+        <div class="avatar" *ngIf="!user.profileimageurlsmall">
+            {{ getUserInitials(user.fullname) }}
+        </div>
+        <img *ngIf="user.profileimageurlsmall" [src]="user.profileimageurlsmall" alt="Avatar" class="avatar">
+
+        <div class="info">
+            <span class="name">{{ user.fullname }}</span>
+            <span class="role">{{ user.roles || 'Estudiante' }}</span>
+        </div>
+    </div>
+    <!-- Fallback footer if no user -->
+    <div class="user-profile" *ngIf="!(currentUser$ | async)">
+        <div class="info">
+            <span class="name">Sin conexión</span>
+            <a routerLink="/config" class="role" style="text-decoration: underline; cursor: pointer;">Reconectar</a>
+        </div>
+    </div>
+
+    <!-- Collapse Button -->
+    <button class="collapse-btn" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <span *ngIf="!isSidebarCollapsed">◀</span>
+        <span *ngIf="isSidebarCollapsed">▶</span>
+    </button>
+</nav>
+
+<!-- ======== MOBILE BOTTOM NAVIGATION BAR (Moodle App Style) ======== -->
+<nav class="mobile-bottom-nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav-item">
+        <span class="bottom-nav-icon">📊</span>
+        <span class="bottom-nav-label">Inicio</span>
+    </a>
+    <a routerLink="/courses" routerLinkActive="active" class="bottom-nav-item">
+        <span class="bottom-nav-icon">📚</span>
+        <span class="bottom-nav-label">Cursos</span>
+    </a>
+    <a routerLink="/calendar" routerLinkActive="active" class="bottom-nav-item">
+        <span class="bottom-nav-icon">📅</span>
+        <span class="bottom-nav-label">Calendario</span>
+    </a>
+    <a routerLink="/messages" routerLinkActive="active" class="bottom-nav-item">
+        <span class="bottom-nav-icon">💬</span>
+        <span class="bottom-nav-label">Mensajes</span>
+        <span class="bottom-nav-badge" *ngIf="(unreadMessagesCount$ | async) as count">{{ count }}</span>
+    </a>
+    <button class="bottom-nav-item menu-toggle" (click)="toggleMobileMenu()">
+        <span class="bottom-nav-icon">☰</span>
+        <span class="bottom-nav-label">Más</span>
+    </button>
+</nav>
+
+<!-- ======== MOBILE SLIDE-UP MENU ======== -->
+<div class="mobile-slide-menu" [class.active]="isMobileMenuOpen">
+    <div class="slide-menu-header">
+        <h3>Menú</h3>
+        <button class="close-menu" (click)="closeMobileMenu()">✕</button>
+    </div>
+
+    <div class="slide-menu-user" *ngIf="currentUser$ | async as user">
+        <div class="avatar-large" *ngIf="!user.profileimageurlsmall">
+            {{ getUserInitials(user.fullname) }}
+        </div>
+        <img *ngIf="user.profileimageurlsmall" [src]="user.profileimageurlsmall" alt="Avatar" class="avatar-large">
+        <div class="user-details" (click)="closeMobileMenu()" routerLink="/profile">
+            <span class="user-name">{{ user.fullname }}</span>
+            <span class="user-role">{{ user.roles || 'Estudiante' }}</span>
+        </div>
+    </div>
+
+    <ul class="slide-menu-links">
+        <li>
+            <a routerLink="/" (click)="closeMobileMenu()">
+                <span class="menu-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/courses" (click)="closeMobileMenu()">
+                <span class="menu-icon">📚</span>
+                <span>Mis Cursos</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/calendar" (click)="closeMobileMenu()">
+                <span class="menu-icon">📅</span>
+                <span>Calendario</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/messages" (click)="closeMobileMenu()">
+                <span class="menu-icon">💬</span>
+                <span>Mensajes</span>
+                <span class="menu-badge" *ngIf="(unreadMessagesCount$ | async) as count">{{ count }}</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/notifications" (click)="closeMobileMenu()">
+                <span class="menu-icon">🔔</span>
+                <span>Notificaciones</span>
+                <span class="menu-badge" *ngIf="(unreadNotificationsCount$ | async) as count">{{ count }}</span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a routerLink="/profile" (click)="closeMobileMenu()">
+                <span class="menu-icon">👤</span>
+                <span>Mi Perfil</span>
+            </a>
+        </li>
+        <li *ngIf="(currentUser$ | async)?.userissiteadmin || !(currentUser$ | async)">
+            <a routerLink="/config" (click)="closeMobileMenu()">
+                <span class="menu-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </li>
+        <li *ngIf="showInstallBtn">
+            <a (click)="installPWA()" class="install-pwa-item"
+                style="background: var(--primary-50); color: var(--primary-700); font-weight: 700;">
+                <span class="menu-icon">📥</span>
+                <span>Instalar Aplicación</span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li *ngIf="currentUser$ | async">
+            <a (click)="logout()" class="logout-item">
+                <span class="menu-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </li>
+    </ul>
+</div>

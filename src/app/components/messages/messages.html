@@ -1,0 +1,91 @@
+<div class="messages-container">
+    <!-- Conversations List -->
+    <div class="conversations-list" [class.hidden-mobile]="selectedConversation">
+        <div class="list-header">
+            <h2>Mensajes</h2>
+        </div>
+
+        <div class="loading-state" *ngIf="loadingConversations">
+            <div class="spinner"></div>
+            <p>Cargando chats...</p>
+        </div>
+
+        <div class="conv-items" *ngIf="!loadingConversations">
+            <div *ngFor="let conv of conversations" class="conv-item"
+                [class.active]="selectedConversation?.id === conv.id" (click)="selectConversation(conv)">
+                <div class="avatar-wrapper">
+                    <img [src]="conv.imageurl || 'https://www.gravatar.com/avatar?d=mp'" class="conv-avatar">
+                    <span class="unread-badge" *ngIf="conv.unreadcount">{{ conv.unreadcount }}</span>
+                </div>
+                <div class="conv-info">
+                    <div class="conv-header-row">
+                        <span class="conv-name">{{ conv.name }}</span>
+                        <!-- <span class="conv-time">12:30</span> -->
+                    </div>
+                    <span class="conv-preview" *ngIf="conv.messages && conv.messages.length > 0">
+                        <span *ngIf="conv.messages[conv.messages.length - 1].useridfrom === currentUser?.id">Tú: </span>
+                        {{ conv.messages[conv.messages.length - 1].text }}
+                    </span>
+                    <span class="conv-preview" *ngIf="!conv.messages || conv.messages.length === 0">
+                        <i>Sin mensajes recientes</i>
+                    </span>
+                </div>
+            </div>
+
+            <div *ngIf="conversations.length === 0" class="empty-state">
+                <span class="icon">📭</span>
+                <p>No tienes conversaciones activas.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area" [class.active-mobile]="selectedConversation">
+        <div class="chat-placeholder" *ngIf="!selectedConversation">
+            <div class="placeholder-content">
+                <span class="placeholder-icon">💬</span>
+                <h3>Tus mensajes</h3>
+                <p>Selecciona una conversación para comenzar a chatear.</p>
+            </div>
+        </div>
+
+        <div class="chat-view" *ngIf="selectedConversation">
+            <div class="chat-header">
+                <button class="back-btn" (click)="backToConversations()">
+                    <span class="icon">◀</span>
+                </button>
+                <img [src]="selectedConversation.imageurl || 'https://www.gravatar.com/avatar?d=mp'"
+                    class="header-avatar">
+                <div class="header-info">
+                    <h3>{{ selectedConversation.name }}</h3>
+                    <span class="status-online"
+                        *ngIf="(selectedConversation.members && selectedConversation.members[0]?.isonline)">En
+                        línea</span>
+                </div>
+            </div>
+
+            <div class="messages-scroll" #scrollContainer>
+                <div class="loading-messages" *ngIf="loadingMessages">
+                    <div class="spinner"></div>
+                </div>
+
+                <div *ngFor="let msg of messages" class="message-bubble"
+                    [class.mine]="msg.useridfrom === currentUser?.id">
+                    <div class="bubble-content" [innerHTML]="msg.text">
+                        <!-- Using innerHTML because Moodle messages can contain HTML -->
+                    </div>
+                    <span class="msg-time">{{ msg.timecreated * 1000 | date:'shortTime' }}</span>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" [(ngModel)]="newMessageText" (keyup.enter)="sendMessage()"
+                    placeholder="Escribe un mensaje..." [disabled]="sendingMessage">
+                <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessageText.trim() || sendingMessage">
+                    <span *ngIf="!sendingMessage">➤</span>
+                    <span *ngIf="sendingMessage" class="spinner-small"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,195 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--neutral-50);
+}
+
+.notifications-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.notifications-header {
+    margin-bottom: 2rem;
+}
+
+.notifications-header h1 {
+    font-size: 1.75rem;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--text-muted);
+}
+
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.notification-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.notification-card.unread {
+    background: #fff;
+    /* Keep white but use marker */
+    border-left: 4px solid var(--primary-500);
+}
+
+.notif-left {
+    flex-shrink: 0;
+}
+
+.notif-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    background: var(--neutral-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.notif-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.fallback-icon {
+    font-size: 1.5rem;
+}
+
+.notif-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notif-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.subject {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+.time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: 1rem;
+}
+
+.body {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.body p {
+    margin: 0 0 0.5rem 0;
+}
+
+.notif-actions {
+    margin-top: 0.5rem;
+}
+
+.view-btn {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-600);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.view-btn:hover {
+    color: var(--primary-700);
+    text-decoration: underline;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--error);
+    border-radius: 50%;
+    position: absolute;
+    top: 1.5rem;
+    right: 1rem;
+}
+
+/* Spinner */
+.spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid var(--primary-600);
+    width: 32px;
+    height: 32px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .notifications-container {
+        padding: 1rem;
+    }
+
+    .notification-card {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .notif-left {
+        display: none;
+        /* Hide icon on mobile to save space? Or keep top left */
+    }
+
+    .unread-dot {
+        top: 1rem;
+        right: 1rem;
+    }
+}

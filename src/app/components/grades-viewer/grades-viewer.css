@@ -1,0 +1,387 @@
+.grades-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.grades-header {
+    margin-bottom: 2rem;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--primary-600, #7c3aed);
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    padding: 0;
+    font-size: 1rem;
+}
+
+.btn-back:hover {
+    text-decoration: underline;
+}
+
+.grades-header h1 {
+    font-size: 2rem;
+    color: var(--text-main, #1e293b);
+    margin: 0;
+}
+
+/* Summary Grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card.main-card {
+    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    color: white;
+    grid-column: span 2;
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.main-card .card-label {
+    opacity: 0.9;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.card-progress {
+    margin-top: 0.5rem;
+}
+
+.progress-bar-mini {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill-mini {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+/* Filters Bar */
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-secondary, #64748b);
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-400, #a78bfa);
+    color: var(--primary-600, #7c3aed);
+}
+
+.filter-btn.active {
+    background: var(--primary-600, #7c3aed);
+    border-color: var(--primary-600, #7c3aed);
+    color: white;
+}
+
+/* Grades Table */
+.grades-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.grades-table thead {
+    background: #f8fafc;
+}
+
+.grades-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.grades-table td {
+    padding: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.grades-table tr:hover {
+    background: #f8fafc;
+}
+
+.grades-table tr.expanded {
+    background: #f0f9ff;
+}
+
+.item-name {
+    font-weight: 500;
+    color: var(--text-main, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.item-icon {
+    font-size: 1.25rem;
+}
+
+.item-badge {
+    display: inline-block;
+    background: #f1f5f9;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #64748b);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.grade-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.grade-max {
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.grade-date {
+    color: var(--text-secondary, #64748b);
+    font-size: 0.875rem;
+}
+
+.text-muted {
+    color: var(--text-secondary, #cbd5e1);
+}
+
+.percentage-bar {
+    position: relative;
+    width: 100%;
+    max-width: 150px;
+    height: 24px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.percentage-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.percentage-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.grade-status {
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.btn-expand {
+    background: transparent;
+    border: none;
+    color: var(--primary-600, #7c3aed);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    transition: transform 0.2s;
+}
+
+.btn-expand:hover {
+    transform: scale(1.2);
+}
+
+.expanded-row {
+    background: #f0f9ff !important;
+}
+
+.expanded-row td {
+    padding: 0 !important;
+}
+
+.feedback-section {
+    padding: 1.5rem;
+    border-top: 2px solid #dbeafe;
+}
+
+.feedback-section h4 {
+    color: var(--primary-600, #7c3aed);
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.feedback-content {
+    color: var(--text-main, #1e293b);
+    line-height: 1.6;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-400, #a78bfa);
+}
+
+.course-total {
+    background: #fef3c7 !important;
+    font-weight: 700;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state,
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary, #64748b);
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.error-icon {
+    font-size: 3rem;
+}
+
+.btn-retry {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-600, #7c3aed);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-retry:hover {
+    background: var(--primary-700, #6d28d9);
+    transform: translateY(-2px);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top-color: var(--primary-600, #7c3aed);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .grades-container {
+        padding: 1rem;
+    }
+
+    .summary-card.main-card {
+        grid-column: span 1;
+    }
+
+    .grades-table {
+        font-size: 0.875rem;
+    }
+
+    .grades-table th,
+    .grades-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .percentage-bar {
+        max-width: 100px;
+    }
+
+    .filters-bar {
+        gap: 0.5rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}

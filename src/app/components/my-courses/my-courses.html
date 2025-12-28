@@ -1,0 +1,68 @@
+<div class="my-courses-container">
+    <header class="page-header">
+        <h1>Mis Cursos</h1>
+        <div class="controls">
+            <!-- Search -->
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar cursos...">
+            </div>
+            <!-- View Toggle -->
+            <button class="btn-icon" (click)="toggleViewMode()"
+                [title]="viewMode === 'card' ? 'Vista lista' : 'Vista tarjetas'">
+                {{ viewMode === 'card' ? '📋' : '▦' }}
+            </button>
+        </div>
+    </header>
+
+    <!-- Filter Tabs -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button [class.active]="filter === 'catalog'" (click)="onFilterChange('catalog')">📚 Catálogo</button>
+            <button [class.active]="filter === 'all'" (click)="onFilterChange('all')">Mis Cursos</button>
+            <button [class.active]="filter === 'inprogress'" (click)="onFilterChange('inprogress')">En progreso</button>
+            <button [class.active]="filter === 'future'" (click)="onFilterChange('future')">Futuros</button>
+            <button [class.active]="filter === 'past'" (click)="onFilterChange('past')">Pasados</button>
+            <button [class.active]="filter === 'favourites'" (click)="onFilterChange('favourites')">Destacados</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando tus cursos...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredCourses.length === 0" class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>No se encontraron cursos</h3>
+        <p>No hay cursos que coincidan con estos filtros.</p>
+    </div>
+
+    <div *ngIf="!loading && filteredCourses.length > 0" class="courses-grid" [class.list-view]="viewMode === 'list'">
+
+        <ng-container *ngFor="let course of filteredCourses">
+            <!-- Reuse existing CourseCard for Card View -->
+            <app-course-card *ngIf="viewMode === 'card'" [title]="course.fullname" [progress]="course.progress"
+                [image]="course.image" [color]="course.color" [id]="course.id"
+                [enrolledUsers]="course.enrolledusercount" [category]="course.categoryname"
+                [shortname]="course.shortname">
+            </app-course-card>
+
+            <!-- Custom List Item for List View -->
+            <div *ngIf="viewMode === 'list'" class="course-list-item" [routerLink]="['/course', course.id]">
+                <div class="course-thumb" [style.background-image]="'url(' + course.image + ')'"></div>
+                <div class="course-details">
+                    <h3>{{ course.fullname }}</h3>
+                    <div class="progress-bar-container" *ngIf="course.progress !== undefined">
+                        <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="course.progress"></div>
+                        </div>
+                        <span class="progress-text">{{ course.progress }}% completado</span>
+                    </div>
+                </div>
+                <div class="course-arrow">➜</div>
+            </div>
+        </ng-container>
+    </div>
+</div>

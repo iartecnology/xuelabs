@@ -1,0 +1,118 @@
+<div class="dashboard-container">
+    <!-- Hero / Welcome Section -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="greeting">
+                <h1>Hola, {{ userName }} <span class="wave">👋</span></h1>
+                <p class="subtitle">¡Qué bueno verte de nuevo! Aquí está tu resumen de hoy.</p>
+            </div>
+            <div class="date-display">
+                <span class="day">{{ now | date:'d' }}</span>
+                <div class="month-year">
+                    <span>{{ now | date:'MMMM' }}</span>
+                    <span>{{ now | date:'yyyy' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats (Office Style) -->
+        <div class="stats-row">
+            <div class="stat-card blue">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ courses.length }}</span>
+                    <span class="stat-label">Cursos Activos</span>
+                </div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-info">
+                    <span class="stat-value">12</span>
+                    <span class="stat-label">Horas Aprendizaje</span>
+                </div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-info">
+                    <span class="stat-value">85%</span>
+                    <span class="stat-label">Promedio General</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Left Column: Courses & Content -->
+        <div class="content-column">
+
+            <!-- Category Filter (Pill Style) -->
+            <section class="filter-section" *ngIf="categories.length > 0">
+                <div class="scrollable-pills">
+                    <button class="pill" [class.active]="selectedCategory === null" (click)="filterByCategory(null)">
+                        Todos
+                    </button>
+                    <button *ngFor="let category of categories" class="pill"
+                        [class.active]="selectedCategory === category.id" (click)="filterByCategory(category.id)">
+                        {{ category.name }}
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading State (Only for My Courses) -->
+            <div *ngIf="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Cargando tus cursos...</p>
+            </div>
+
+            <!-- Courses Grid (Modern Cards) -->
+            <section class="courses-grid" *ngIf="!loading">
+
+                <!-- If filtering, show filtered results -->
+                <ng-container *ngIf="selectedCategory">
+                    <app-course-card *ngFor="let course of filteredCourses" class="fade-in" [title]="course.fullname"
+                        [image]="getCourseImage(course.id)" [id]="course.id" [enrolledUsers]="course.enrolledusercount"
+                        [category]="course.categoryname" [shortname]="course.shortname">
+                    </app-course-card>
+                </ng-container>
+
+                <!-- If NOT filtering (Show My Courses) -->
+                <ng-container *ngIf="!selectedCategory">
+
+                    <div *ngIf="courses.length === 0" class="empty-state">
+                        <img src="assets/empty_courses.svg" alt="" onerror="this.style.display='none'">
+                        <h3>No tienes cursos inscritos aún</h3>
+                        <p>Explora el catálogo o contacta a tu administrador.</p>
+                    </div>
+
+                    <app-course-card *ngFor="let course of courses" class="fade-in" [title]="course.title"
+                        [progress]="course.progress" [image]="course.image" [color]="course.color" [id]="course.id"
+                        [enrolledUsers]="course.enrolledusercount" [category]="course.categoryname"
+                        [shortname]="course.shortname">
+                    </app-course-card>
+                </ng-container>
+
+            </section>
+        </div>
+
+        <!-- Right Column: Widgets -->
+        <aside class="widgets-column">
+            <!-- Calendar Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3>Calendario</h3>
+                    <button class="btn-icon">📅</button>
+                </div>
+                <app-calendar [isWidget]="true"></app-calendar>
+            </div>
+
+            <!-- Activities Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3>Actividad Reciente</h3>
+                    <button class="btn-icon">🔔</button>
+                </div>
+                <app-recent-activities></app-recent-activities>
+            </div>
+        </aside>
+    </div>
+</div>

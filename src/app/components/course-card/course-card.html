@@ -1,0 +1,35 @@
+<div class="card">
+    <div class="card-image" [style.background-image]="'url(' + displayImage + ')'">
+        <div class="overlay"></div>
+        <span class="badge" [style.background]="displayColor">En progreso</span>
+    </div>
+    <div class="card-content">
+        <div class="card-meta"
+            style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);">
+            <span class="category-info">{{ displayCategory }}</span>
+            <span class="shortname-info">{{ displayShortname }}</span>
+        </div>
+
+        <div class="card-title-row">
+            <h3 class="course-title">{{ displayTitle }}</h3>
+            <div class="student-count" title="Estudiantes inscritos">
+                👥 {{ displayEnrolledUsers }}
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>Completado</span>
+                <span>{{ displayProgress }}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="displayProgress" [style.background]="displayColor"></div>
+            </div>
+        </div>
+
+        <!-- Always show button, handle missing ID gracefully -->
+        <button class="btn-primary full-width-btn" [routerLink]="['/course', displayId || 0]">
+            Ver curso <span class="arrow">→</span>
+        </button>
+    </div>
+</div>

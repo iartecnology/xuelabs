@@ -1,0 +1,210 @@
+<div class="profile-container">
+    <!-- Header -->
+    <div class="profile-header">
+        <button class="btn-back" routerLink="/dashboard">
+            ← Volver al Dashboard
+        </button>
+        <h1>Mi Perfil</h1>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando perfil...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+        <div class="error-icon">⚠️</div>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="loadUserProfile()">Reintentar</button>
+    </div>
+
+    <!-- Profile Content -->
+    <div *ngIf="!loading && !error && user" class="profile-content">
+
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <!-- Profile Picture -->
+            <div class="profile-picture-section">
+                <div class="profile-picture" *ngIf="user.profileimageurl">
+                    <img [src]="user.profileimageurl" [alt]="user.fullname">
+                </div>
+                <div class="profile-picture-placeholder" *ngIf="!user.profileimageurl">
+                    <span class="initials">{{ getInitials() }}</span>
+                </div>
+                <div class="profile-info-header">
+                    <h2>{{ user.fullname }}</h2>
+                    <p class="username">@{{ user.username }}</p>
+                    <p class="sitename">📚 {{ user.sitename }}</p>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div *ngIf="saveSuccess" class="success-message">
+                ✅ Perfil actualizado correctamente
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="saveError" class="error-message">
+                ❌ {{ saveError }}
+            </div>
+
+            <!-- View Mode -->
+            <div *ngIf="!editMode" class="profile-details">
+                <div class="detail-group">
+                    <label>Nombre Completo</label>
+                    <p>{{ user.fullname }}</p>
+                </div>
+
+                <div class="detail-group">
+                    <label>Nombre</label>
+                    <p>{{ user.firstname }}</p>
+                </div>
+
+                <div class="detail-group">
+                    <label>Apellido</label>
+                    <p>{{ user.lastname }}</p>
+                </div>
+
+                <div class="detail-group">
+                    <label>Correo Electrónico</label>
+                    <p>{{ user.email || 'No especificado' }}</p>
+                </div>
+
+                <div class="detail-group">
+                    <label>Nombre de Usuario</label>
+                    <p>{{ user.username }}</p>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn-edit" (click)="toggleEditMode()">
+                        ✏️ Editar Perfil
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div *ngIf="editMode" class="profile-edit-form">
+                <div class="form-group">
+                    <label for="firstname">Nombre</label>
+                    <input type="text" id="firstname" [(ngModel)]="editedUser.firstname" class="form-input"
+                        placeholder="Tu nombre">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastname">Apellido</label>
+                    <input type="text" id="lastname" [(ngModel)]="editedUser.lastname" class="form-input"
+                        placeholder="Tu apellido">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" [(ngModel)]="editedUser.email" class="form-input"
+                        placeholder="tu@email.com">
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-save" (click)="saveProfile()" [disabled]="saving">
+                        <span *ngIf="!saving">💾 Guardar Cambios</span>
+                        <span *ngIf="saving">⏳ Guardando...</span>
+                    </button>
+                    <button class="btn-cancel" (click)="cancelEdit()" [disabled]="saving">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Card -->
+        <div class="settings-card">
+            <h3>⚙️ Configuración</h3>
+
+            <div class="settings-section">
+                <h4>Conexión</h4>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-label">Servidor Moodle</span>
+                        <span class="setting-value">{{ user.sitename }}</span>
+                    </div>
+                    <button class="btn-setting" routerLink="/config">
+                        Cambiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Seguridad</h4>
+
+                <!-- Password Change Success -->
+                <div *ngIf="passwordChangeSuccess" class="success-message">
+                    ✅ Contraseña cambiada correctamente
+                </div>
+
+                <!-- Password Change Error -->
+                <div *ngIf="passwordChangeError" class="error-message">
+                    ❌ {{ passwordChangeError }}
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-label">Cambiar Contraseña</span>
+                        <span class="setting-description">Actualiza tu contraseña de acceso</span>
+                    </div>
+                    <button class="btn-setting" (click)="togglePasswordChange()">
+                        <span *ngIf="!showPasswordChange">🔒 Cambiar</span>
+                        <span *ngIf="showPasswordChange">❌ Cancelar</span>
+                    </button>
+                </div>
+
+                <!-- Password Change Form -->
+                <div *ngIf="showPasswordChange" class="password-change-form">
+                    <div class="form-group">
+                        <label for="currentPassword">Contraseña Actual</label>
+                        <input type="password" id="currentPassword" [(ngModel)]="currentPassword" class="form-input"
+                            placeholder="Tu contraseña actual" [disabled]="changingPassword">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Nueva Contraseña</label>
+                        <input type="password" id="newPassword" [(ngModel)]="newPassword" class="form-input"
+                            placeholder="Mínimo 8 caracteres" [disabled]="changingPassword">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" class="form-input"
+                            placeholder="Repite la nueva contraseña" [disabled]="changingPassword">
+                    </div>
+
+                    <button class="btn-change-password" (click)="changePassword()" [disabled]="changingPassword">
+                        <span *ngIf="!changingPassword">🔐 Cambiar Contraseña</span>
+                        <span *ngIf="changingPassword">⏳ Cambiando...</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Sesión</h4>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-label">Cerrar Sesión</span>
+                        <span class="setting-description">Desconectar de Moodle</span>
+                    </div>
+                    <button class="btn-logout" (click)="logout()">
+                        🚪 Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="info-card">
+            <h3>ℹ️ Información</h3>
+            <p class="info-text">
+                Este perfil está sincronizado con tu cuenta de Moodle.
+                Algunos cambios pueden requerir permisos especiales en el servidor.
+            </p>
+        </div>
+    </div>
+</div>
