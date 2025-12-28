@@ -6,35 +6,24 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-# Keep base-href relative
+# Keep base-href relative to be safe
 RUN npm run build -- --base-href=./
 
-# Stage 2: Run using Nginx
-FROM nginx:alpine
+# Stage 2: Run using http-server (Simpler and more robust for debugging than Nginx)
+FROM node:20-alpine
 
-# Copy built assets to Nginx html folder
-COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
+WORKDIR /app
 
-# Create a dedicated health check file
-RUN echo "OK" > /usr/share/nginx/html/health.txt
+RUN npm install -g http-server
 
-# Simplest Nginx Config possible for SPA - LISTENING ON ALL INTERFACES 0.0.0.0 NOT LOCALHOST
-RUN echo 'server { \
-    listen 80; \
-    server_name _; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    location /health.txt { \
-    access_log off; \
-    return 200 "OK"; \
-    } \
-    \
-    location / { \
-    try_files $uri $uri/ /index.html; \
-    } \
-    }' > /etc/nginx/conf.d/default.conf
+# Copy built assets
+COPY --from=builder /app/dist/learnhub/browser ./public
+
+# ENV Variables
+ENV PORT=80
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start static server on PORT 80 bound to 0.0.0.0
+# --proxy http://localhost:80? allows SPA routing fallback to index.html
+CMD ["http-server", "./public", "-p", "80", "-a", "0.0.0.0", "--cors", "-c-1", "--proxy", "http://localhost:80?"]
