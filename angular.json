@@ -55,9 +55,7 @@
             ],
             "server": "src/main.server.ts",
             "prerender": false,
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "ssr": false
           },
           "configurations": {
             "production": {
