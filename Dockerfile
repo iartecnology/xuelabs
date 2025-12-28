@@ -8,20 +8,28 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Run
-FROM node:20-alpine
+# Stage 2: Run using Nginx (Production Grade)
+FROM nginx:alpine
 
-WORKDIR /app
+# Copy built assets to Nginx html folder
+# Try both potential output paths to be safe. Angular 17+ outputs to browser folder.
+COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
 
-RUN npm install -g http-server
+# Custom Nginx config to handle SPA routing (fallback to index.html)
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+    try_files $uri $uri/ /index.html; \
+    } \
+    # MIME types fix \
+    include /etc/nginx/mime.types; \
+    }' > /etc/nginx/conf.d/default.conf
 
-# Copy browser build to public folder
-COPY --from=builder /app/dist/learnhub/browser ./public
+# Easypanel maps port 80 by default for Nginx images usually, or we can expose 80.
+# Your Docker Compose exposes 4000? We should stick to 80 internal for Nginx standard.
+EXPOSE 80
 
-# ENV Variables for http-server
-ENV PORT=4000
-
-EXPOSE 4000
-
-# HOST 0.0.0.0 is CRITICAL for Docker networking
-CMD ["http-server", "./public", "-p", "4000", "-a", "0.0.0.0", "--cors", "-c-1", "--proxy", "http://localhost:4000?"]
+CMD ["nginx", "-g", "daemon off;"]
