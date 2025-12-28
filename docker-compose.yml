@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  xuelabs:
+    # Option 1: Build directly from your Git repo (Easypanel handles this via UI mostly, but this standardizes it)
+    build:
+      context: https://github.com/iartecnology/xuelabs.git#main
+      dockerfile: Dockerfile
+
+    # Option 2: If you want to force local build context in standard Docker Compose
+    # build: .
+
+    container_name: xuelabs-app
+    restart: always
+    ports:
+      - "80:4000" # Mapping port 4000 (container) to port 80 (outside/internet)
+    environment:
+      - NODE_ENV=production
+    networks:
+      - xuelabs-net
+
+networks:
+  xuelabs-net:
+    driver: bridge
