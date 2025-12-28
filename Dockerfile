@@ -18,20 +18,18 @@ COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
 # Create a dedicated health check file
 RUN echo "OK" > /usr/share/nginx/html/health.txt
 
-# Simplest Nginx Config possible for SPA
+# Simplest Nginx Config possible for SPA - LISTENING ON ALL INTERFACES 0.0.0.0 NOT LOCALHOST
 RUN echo 'server { \
     listen 80; \
-    server_name localhost; \
+    server_name _; \
     root /usr/share/nginx/html; \
     index index.html; \
     \
-    # Health check endpoint \
     location /health.txt { \
     access_log off; \
     return 200 "OK"; \
     } \
     \
-    # Main app \
     location / { \
     try_files $uri $uri/ /index.html; \
     } \
