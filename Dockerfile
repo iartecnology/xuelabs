@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+# Configura base-href relativo durante el build también para asegurar consistencia
+RUN npm run build -- --base-href=./
 
 # Stage 2: Run using Nginx
 FROM nginx:alpine
@@ -14,19 +15,29 @@ FROM nginx:alpine
 # Copy built assets
 COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
 
-# CONFIG NGINX TO LISTEN ON PORT 80 (Standard for Easypanel default)
+# Config Nginx con Logs detallados y sin cache agresivo para debug
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
+    \
+    # Logs a stdout para verlos en Easypanel \
+    error_log /dev/stderr debug; \
+    access_log /dev/stdout; \
+    \
     location / { \
     try_files $uri $uri/ /index.html; \
+    add_header Cache-Control "no-store, no-cache, must-revalidate"; \
     } \
+    \
+    # Tipos MIME correctos \
     include /etc/nginx/mime.types; \
+    types { \
+    application/javascript js mjs; \
+    } \
     }' > /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
