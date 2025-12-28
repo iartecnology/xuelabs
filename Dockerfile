@@ -8,28 +8,25 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Run using Nginx (Production Grade)
+# Stage 2: Run using Nginx
 FROM nginx:alpine
 
-# Copy built assets to Nginx html folder
-# Try both potential output paths to be safe. Angular 17+ outputs to browser folder.
+# Copy built assets
 COPY --from=builder /app/dist/learnhub/browser /usr/share/nginx/html
 
-# Custom Nginx config to handle SPA routing (fallback to index.html)
+# Custom config to LISTEN ON PORT 4000 to match user's Easypanel config
 RUN echo 'server { \
-    listen 80; \
+    listen 4000; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
     location / { \
     try_files $uri $uri/ /index.html; \
     } \
-    # MIME types fix \
     include /etc/nginx/mime.types; \
     }' > /etc/nginx/conf.d/default.conf
 
-# Easypanel maps port 80 by default for Nginx images usually, or we can expose 80.
-# Your Docker Compose exposes 4000? We should stick to 80 internal for Nginx standard.
-EXPOSE 80
+# Expose 4000 explicitly
+EXPOSE 4000
 
 CMD ["nginx", "-g", "daemon off;"]
